@@ -1,5 +1,5 @@
-use crate::dns::{DNSEncodable, DnsName};
-use std::io::{Result, Write};
+use crate::dns::{DNSEncodable, DnsName, DnsResult};
+use std::io::Write;
 
 #[derive(Debug)]
 pub struct DNSQuestion {
@@ -9,10 +9,10 @@ pub struct DNSQuestion {
 }
 
 impl DNSEncodable for DNSQuestion {
-    fn write_bytes<W: Write>(&self, writer: &mut W) -> Result<()> {
+    fn write_bytes<W: Write>(&self, writer: &mut W) -> DnsResult<()> {
         self.name.write_bytes(writer)?;
-        writer.write_all(&self.type_.to_be_bytes())?;
-        writer.write_all(&self.class.to_be_bytes())?;
+        writer.write_all(&self.type_.to_be_bytes()).map_err(|e| e.to_string())?;
+        writer.write_all(&self.class.to_be_bytes()).map_err(|e| e.to_string())?;
         Ok(())
     }
 }
