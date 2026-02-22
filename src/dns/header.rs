@@ -29,14 +29,14 @@ impl DNSEncodable for DNSHeader {
 }
 
 impl DNSDecodable for DNSHeader {
-    fn from_bytes(buffer: &mut BytePacketReader) -> DnsResult<Self> {
+    fn from_bytes(reader: &mut BytePacketReader) -> DnsResult<Self> {
         Ok(DNSHeader {
-            id: u16::from_be_bytes([buffer.read()?, buffer.read()?]),
-            flags: u16::from_be_bytes([buffer.read()?, buffer.read()?]),
-            num_questions: u16::from_be_bytes([buffer.read()?, buffer.read()?]),
-            num_answers: u16::from_be_bytes([buffer.read()?, buffer.read()?]),
-            num_authorities: u16::from_be_bytes([buffer.read()?, buffer.read()?]),
-            num_additionals: u16::from_be_bytes([buffer.read()?, buffer.read()?]),
+            id: u16::from_be_bytes([reader.read()?, reader.read()?]),
+            flags: u16::from_be_bytes([reader.read()?, reader.read()?]),
+            num_questions: u16::from_be_bytes([reader.read()?, reader.read()?]),
+            num_answers: u16::from_be_bytes([reader.read()?, reader.read()?]),
+            num_authorities: u16::from_be_bytes([reader.read()?, reader.read()?]),
+            num_additionals: u16::from_be_bytes([reader.read()?, reader.read()?]),
         })
     }
 }

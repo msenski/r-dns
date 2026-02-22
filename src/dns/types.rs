@@ -41,26 +41,8 @@ pub trait DNSEncodable {
 
 /// A trait for types that can be de-serialized from the DNS wire format.
 pub trait DNSDecodable {
-    fn from_bytes(buffer: &mut BytePacketReader) -> DnsResult<Self>
+    fn from_bytes(reader: &mut BytePacketReader) -> DnsResult<Self>
     where
         Self: Sized;
 }
 
-/// Holds the parsed DNS name, like "example.com".
-#[derive(Debug)]
-pub struct DnsName(pub String);
-
-impl DNSEncodable for DnsName {
-    fn write_bytes<W: Write>(&self, writer: &mut W) -> DnsResult<()> {
-        for part in self.0.split(".") {
-            // In DNS, the header alternates between a length byte
-            //(indicating the length of the following string
-            // and the actual text bytes (excl. dots). A "0"-length byte
-            // represents the end. Example: [7]example[3]com[0]
-            writer.write_all(&[part.len() as u8]).map_err(|e| e.to_string())?; // length-byte
-            writer.write_all(part.as_bytes()).map_err(|e| e.to_string())?; // actual string
-        }
-        writer.write_all(&[0]).map_err(|e| e.to_string())?;
-        Ok(())
-    }
-}

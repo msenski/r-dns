@@ -1,13 +1,15 @@
 use std::io::Write;
 
 pub mod header;
+pub mod name;
 pub mod question;
 pub mod types;
 
 // Declare explicitly, for more convenient use.
 pub use header::DNSHeader;
+pub use name::DnsName;
 pub use question::DNSQuestion;
-pub use types::{DnsResult, BytePacketReader, DNSEncodable, DNSDecodable, DnsName};
+pub use types::{DnsResult, BytePacketReader, DNSEncodable, DNSDecodable};
 
 pub struct DNSPacket {
     pub header: DNSHeader,
