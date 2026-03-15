@@ -1,5 +1,7 @@
-use r_dns::dns::types::{BytePacketReader, DNSDecodable};
-use r_dns::dns::{DNSEncodable, DNSHeader, DNSPacket, DNSQuestion, DnsName};
+use r_dns::dns::{
+    BytePacketReader, DNSDecodable, DNSEncodable, DNSHeader, DNSPacket, DNSQuestion, DNSRecord,
+    DnsName,
+};
 use std::net::UdpSocket;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,16 +28,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("Failed to sent DNS packet");
 
     // DNS answer is usually less than 512 bytes
-    let mut response_buf= [0u8; 512];
+    let mut response_buf = [0u8; 512];
 
     match socket.recv(&mut response_buf) {
         Ok(_) => {
             let mut reader = BytePacketReader {
                 buffer: response_buf,
-                position: 0
+                position: 0,
             };
-            let header = DNSHeader::from_bytes(&mut reader);
-            println!("{:#?}", header)
+            let header = DNSHeader::from_bytes(&mut reader)?;
+            println!("{header:#?}");
+            let question = DNSQuestion::from_bytes(&mut reader)?;
+            println!("{question:#?}");
+            let record = DNSRecord::from_bytes(&mut reader)?;
+            println!("{record:#?}");
         }
         Err(err) => eprintln!("Encountered error while trying to receive response: {err}"),
     };
