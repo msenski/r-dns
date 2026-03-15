@@ -18,6 +18,16 @@ impl BytePacketReader {
         Ok(res)
     }
 
+    // pub fn read(&mut self, amount: usize) -> DnsResult<[u8], String> {
+    //     let res = [0u8; amount];
+    //     for _ in ..amount {
+    //         if self.position >= self.buffer.len() {
+    //             return Err("End of buffer reached.".to_string());
+    //         }
+    //     }
+    // }
+
+    /// Returns the byte at position `pos`, if present.
     pub fn get(&self, pos: usize) -> DnsResult<u8> {
         if pos >= self.buffer.len() {
             return Err(format!("End of buffer at position {}", pos));
@@ -45,4 +55,3 @@ pub trait DNSDecodable {
     where
         Self: Sized;
 }
-

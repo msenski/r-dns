@@ -18,12 +18,24 @@ pub struct DNSHeader {
 
 impl DNSEncodable for DNSHeader {
     fn write_bytes<W: Write>(&self, writer: &mut W) -> DnsResult<()> {
-        writer.write_all(&self.id.to_be_bytes()).map_err(|e| e.to_string())?;
-        writer.write_all(&self.flags.to_be_bytes()).map_err(|e| e.to_string())?;
-        writer.write_all(&self.num_questions.to_be_bytes()).map_err(|e| e.to_string())?;
-        writer.write_all(&self.num_answers.to_be_bytes()).map_err(|e| e.to_string())?;
-        writer.write_all(&self.num_authorities.to_be_bytes()).map_err(|e| e.to_string())?;
-        writer.write_all(&self.num_additionals.to_be_bytes()).map_err(|e| e.to_string())?;
+        writer
+            .write_all(&self.id.to_be_bytes())
+            .map_err(|e| e.to_string())?;
+        writer
+            .write_all(&self.flags.to_be_bytes())
+            .map_err(|e| e.to_string())?;
+        writer
+            .write_all(&self.num_questions.to_be_bytes())
+            .map_err(|e| e.to_string())?;
+        writer
+            .write_all(&self.num_answers.to_be_bytes())
+            .map_err(|e| e.to_string())?;
+        writer
+            .write_all(&self.num_authorities.to_be_bytes())
+            .map_err(|e| e.to_string())?;
+        writer
+            .write_all(&self.num_additionals.to_be_bytes())
+            .map_err(|e| e.to_string())?;
         Ok(())
     }
 }
