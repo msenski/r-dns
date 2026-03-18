@@ -3,60 +3,87 @@ use std::io::Write;
 pub mod header;
 pub mod name;
 pub mod question;
+pub mod record;
 pub mod types;
 
 // Declare explicitly, for more convenient use.
 pub use header::DNSHeader;
-pub use name::DnsName;
+pub use name::DNSName;
 pub use question::DNSQuestion;
-pub use types::{BytePacketReader, DNSDecodable, DNSEncodable, DnsResult};
+pub use record::DNSRecord;
+pub use types::{BytePacketReader, DNSDecodable, DNSEncodable, DNSResult};
 
+#[derive(Debug)]
 pub struct DNSPacket {
     pub header: DNSHeader,
-    pub question: DNSQuestion,
+    pub questions: Vec<DNSQuestion>,
+    pub answers: Vec<DNSRecord>,
+    pub authorities: Vec<DNSRecord>,
+    pub additionals: Vec<DNSRecord>,
+}
+
+impl DNSPacket {
+    /// A helper to create a clean packet with empty lists
+    pub fn new(header: DNSHeader) -> Self {
+        DNSPacket {
+            header,
+            questions: Vec::new(),
+            answers: Vec::new(),
+            authorities: Vec::new(),
+            additionals: Vec::new(),
+        }
+    }
 }
 
 impl DNSEncodable for DNSPacket {
-    fn write_bytes<W: Write>(&self, writer: &mut W) -> DnsResult<()> {
+    fn write_bytes<W: Write>(&self, writer: &mut W) -> DNSResult<()> {
         self.header.write_bytes(writer)?;
-        self.question.write_bytes(writer)?;
+        for question in &self.questions {
+            question.write_bytes(writer)?;
+        }
+        for answer in &self.answers {
+            answer.write_bytes(writer)?;
+        }
+        for authority in &self.authorities {
+            authority.write_bytes(writer)?;
+        }
+        for additional in &self.additionals {
+            additional.write_bytes(writer)?;
+        }
         Ok(())
     }
 }
 
-#[derive(Debug)]
-pub struct DNSRecord {
-    pub name: DnsName,
-    pub type_: u16,
-    pub class: u16,
-    pub ttl: u32,
-    pub data_len: u16,
-    pub data: Vec<u8>,
-}
-
-impl DNSDecodable for DNSRecord {
-    fn from_bytes(reader: &mut BytePacketReader) -> DnsResult<Self> {
-        let name = DnsName::from_bytes(reader)?;
-        let type_ = u16::from_be_bytes([reader.read()?, reader.read()?]);
-        let class = u16::from_be_bytes([reader.read()?, reader.read()?]);
-        let ttl = u32::from_be_bytes([
-            reader.read()?,
-            reader.read()?,
-            reader.read()?,
-            reader.read()?,
-        ]);
-        let data_len = u16::from_be_bytes([reader.read()?, reader.read()?]);
-        let mut data = Vec::new();
-        for _ in 0..data_len {
-            data.push(reader.read()?);
+impl DNSDecodable for DNSPacket {
+    fn from_bytes(reader: &mut BytePacketReader) -> DNSResult<Self>
+    where
+        Self: Sized,
+    {
+        let header = DNSHeader::from_bytes(reader)?;
+        let mut questions = Vec::new();
+        println!("Parsing Header:");
+        println!("{header:#?}");
+        for _ in 0..header.num_questions {
+            questions.push(DNSQuestion::from_bytes(reader)?);
         }
-        return Ok(DNSRecord {
-            name,
-            type_,
-            class,
-            ttl,
-            data_len,
-            data,
+        let mut answers = Vec::new();
+        for _ in 0..header.num_answers {
+            answers.push(DNSRecord::from_bytes(reader)?);
+        }
+        let mut authorities = Vec::new();
+        for _ in 0..header.num_authorities {
+            authorities.push(DNSRecord::from_bytes(reader)?);
+        }
+        let mut additionals = Vec::new();
+        for _ in 0..header.num_additionals {
+            additionals.push(DNSRecord::from_bytes(reader)?);
+        }
+        return Ok(DNSPacket {
+            header,
+            questions,
+            answers,
+            authorities,
+            additionals,
         });
     }
 }

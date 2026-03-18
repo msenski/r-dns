@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use crate::dns::{BytePacketReader, DNSDecodable, DNSEncodable, DnsResult};
+use crate::dns::{BytePacketReader, DNSDecodable, DNSEncodable, DNSResult};
 
 /// Number 192 in hex (11000000 in binary). If the first 2 bits
 /// a length segment are 11, they indicate a compression. Compression
@@ -9,10 +9,10 @@ const COMPRESSION_PRREFIX: u8 = 0xC0;
 
 /// Holds the parsed DNS name, like "example.com".
 #[derive(Debug)]
-pub struct DnsName(pub String);
+pub struct DNSName(pub String);
 
-impl DNSEncodable for DnsName {
-    fn write_bytes<W: Write>(&self, writer: &mut W) -> DnsResult<()> {
+impl DNSEncodable for DNSName {
+    fn write_bytes<W: Write>(&self, writer: &mut W) -> DNSResult<()> {
         for part in self.0.split(".") {
             // In DNS, the header alternates between a length byte
             //(indicating the length of the following string
@@ -30,8 +30,8 @@ impl DNSEncodable for DnsName {
     }
 }
 
-impl DNSDecodable for DnsName {
-    fn from_bytes(reader: &mut BytePacketReader) -> DnsResult<Self> {
+impl DNSDecodable for DNSName {
+    fn from_bytes(reader: &mut BytePacketReader) -> DNSResult<Self> {
         let mut name = String::new();
         let mut add_dot = false;
 
@@ -99,6 +99,6 @@ impl DNSDecodable for DnsName {
             reader.position = pos;
         }
 
-        Ok(DnsName(name))
+        Ok(DNSName(name))
     }
 }
