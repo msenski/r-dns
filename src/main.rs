@@ -1,5 +1,5 @@
 use r_dns::dns::{
-    BytePacketReader, DNSDecodable, DNSEncodable, DNSHeader, DNSName, DNSPacket, DNSQuestion
+    BytePacketReader, DNSDecodable, DNSEncodable, DNSHeader, DNSName, DNSPacket, DNSQuestion, ResourceClass, ResourceType
 };
 use std::net::UdpSocket;
 
@@ -7,7 +7,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // create the Query packet
     let id = rand::random::<u16>();
     let mut query = DNSPacket::new(DNSHeader::new_query(id));
-    query.questions.push(DNSQuestion { name: DNSName("www.google.com".to_string()), type_: 1, class: 1 });
+    query.questions.push(DNSQuestion {
+        name: DNSName("www.google.com".to_string()),
+        type_: ResourceType::A,
+        class: ResourceClass::IN,
+    });
 
     // "0.0.0.0:0" means:
     // 0.0.0.0 -> Listen on all my local network interfaces (WiFi, Ethernet).
