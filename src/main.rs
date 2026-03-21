@@ -1,5 +1,6 @@
 use r_dns::dns::{
-    BytePacketReader, DNSDecodable, DNSEncodable, DNSHeader, DNSName, DNSPacket, DNSQuestion, ResourceClass, ResourceType
+    BytePacketReader, DNSDecodable, DNSEncodable, DNSHeader, DNSName, DNSPacket, DNSQuestion,
+    ResourceClass, ResourceType,
 };
 use std::net::UdpSocket;
 

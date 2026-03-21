@@ -1,4 +1,5 @@
 use std::io::Write;
+use std::net::{Ipv4Addr, Ipv6Addr};
 
 pub type DNSResult<T> = std::result::Result<T, String>;
 
@@ -139,6 +140,30 @@ impl From<ResourceType> for u16 {
             ResourceType::AAAA => 28,
             ResourceType::SRV => 33,
             ResourceType::UNKNOWN(value) => value,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Data {
+    IPv4(Ipv4Addr),
+    Unknown(Vec<u8>), // TODO: Add other data types
+}
+
+impl DNSEncodable for Data {
+    fn write_bytes<W: Write>(&self, writer: &mut W) -> DNSResult<()> {
+        match self {
+            Data::IPv4(addr) => writer.write_all(&addr.octets()).map_err(|e| e.to_string()),
+            Data::Unknown(data) => writer.write_all(&data).map_err(|e| e.to_string()),
+        }
+    }
+}
+
+impl Data {
+    pub fn len(&self) -> u16 {
+        match self {
+            Data::IPv4(_) => 4,
+            Data::Unknown(data) => data.len() as u16,
         }
     }
 }

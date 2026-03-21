@@ -1,34 +1,44 @@
-use crate::dns::{BytePacketReader, DNSDecodable, DNSEncodable, DNSName, DNSResult};
-use std::io::Write;
+use crate::dns::{
+    BytePacketReader, DNSDecodable, DNSEncodable, DNSName, DNSResult, Data, ResourceClass,
+    ResourceType,
+};
+use std::{io::Write, net::Ipv4Addr};
 
 #[derive(Debug)]
 pub struct DNSRecord {
     pub name: DNSName,
-    pub type_: u16,
-    pub class: u16,
+    pub type_: ResourceType,
+    pub class: ResourceClass,
     pub ttl: u32,
     // omit adding a `data_length`` property, as it can be derived
     // from `self.data` and should not be se manually
-    pub data: Vec<u8>,
+    pub data: Data,
 }
 
 impl DNSEncodable for DNSRecord {
     fn write_bytes<W: Write>(&self, writer: &mut W) -> DNSResult<()> {
         self.name.write_bytes(writer)?;
+
+        let type_int: u16 = self.type_.into();
         writer
-            .write_all(&self.type_.to_be_bytes())
+            .write_all(&type_int.to_be_bytes())
             .map_err(|e| e.to_string())?;
+
+        let class_int: u16 = self.class.into();
         writer
-            .write_all(&self.class.to_be_bytes())
+            .write_all(&class_int.to_be_bytes())
             .map_err(|e| e.to_string())?;
+
         writer
             .write_all(&self.ttl.to_be_bytes())
             .map_err(|e| e.to_string())?;
+
         let data_len = self.data.len();
         writer
             .write_all(&data_len.to_be_bytes())
             .map_err(|e| e.to_string())?;
-        writer.write_all(&self.data).map_err(|e| e.to_string())?;
+
+        self.data.write_bytes(writer)?;
         Ok(())
     }
 }
@@ -36,8 +46,8 @@ impl DNSEncodable for DNSRecord {
 impl DNSDecodable for DNSRecord {
     fn from_bytes(reader: &mut BytePacketReader) -> DNSResult<Self> {
         let name = DNSName::from_bytes(reader)?;
-        let type_ = u16::from_be_bytes([reader.read()?, reader.read()?]);
-        let class = u16::from_be_bytes([reader.read()?, reader.read()?]);
+        let type_ = ResourceType::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
+        let class = ResourceClass::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
         let ttl = u32::from_be_bytes([
             reader.read()?,
             reader.read()?,
@@ -45,10 +55,19 @@ impl DNSDecodable for DNSRecord {
             reader.read()?,
         ]);
         let data_len = u16::from_be_bytes([reader.read()?, reader.read()?]);
-        let mut data = Vec::new();
-        for _ in 0..data_len {
-            data.push(reader.read()?);
+        let mut data_bytes = vec![0u8; data_len as usize];
+        for i in 0..data_len {
+            data_bytes[i as usize] = reader.read()?;
         }
+        let data = match type_ {
+            ResourceType::A => {
+                let octets: [u8; 4] = data_bytes
+                    .try_into()
+                    .map_err(|_| "Ipv4 address must be exactly 4 bytes".to_string())?;
+                Data::IPv4(Ipv4Addr::from_octets(octets))
+            }
+            _ => Data::Unknown(data_bytes),
+        };
         return Ok(DNSRecord {
             name,
             type_,
