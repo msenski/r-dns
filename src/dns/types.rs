@@ -1,5 +1,5 @@
 use std::io::Write;
-use std::net::{Ipv4Addr, Ipv6Addr};
+use std::net::Ipv4Addr;
 
 pub type DNSResult<T> = std::result::Result<T, String>;
 
