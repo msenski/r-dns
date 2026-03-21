@@ -1,20 +1,18 @@
 use r_dns::dns::{
-    BytePacketReader, DNSDecodable, DNSEncodable, DNSHeader, DNSPacket, DNSQuestion, DNSRecord,
-    DnsName,
+    BytePacketReader, DNSDecodable, DNSEncodable, DNSHeader, DNSName, DNSPacket, DNSQuestion,
+    ResourceClass, ResourceType,
 };
 use std::net::UdpSocket;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // create the Query packet
     let id = rand::random::<u16>();
-    let query = DNSPacket {
-        header: DNSHeader::new_query(id),
-        question: DNSQuestion {
-            name: DnsName("google.com".to_string()),
-            type_: 1, // Type A
-            class: 1, // Class IN
-        },
-    };
+    let mut query = DNSPacket::new(DNSHeader::new_query(id));
+    query.questions.push(DNSQuestion {
+        name: DNSName("www.google.com".to_string()),
+        type_: ResourceType::A,
+        class: ResourceClass::IN,
+    });
 
     // "0.0.0.0:0" means:
     // 0.0.0.0 -> Listen on all my local network interfaces (WiFi, Ethernet).
@@ -23,6 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut query_buf: Vec<u8> = Vec::new();
     query.write_bytes(&mut query_buf)?;
+    // Port 53 is the DNS port
     socket
         .send_to(&query_buf, "8.8.8.8:53")
         .expect("Failed to sent DNS packet");
@@ -36,12 +35,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 buffer: response_buf,
                 position: 0,
             };
-            let header = DNSHeader::from_bytes(&mut reader)?;
-            println!("{header:#?}");
-            let question = DNSQuestion::from_bytes(&mut reader)?;
-            println!("{question:#?}");
-            let record = DNSRecord::from_bytes(&mut reader)?;
-            println!("{record:#?}");
+            println!("Received response");
+            let packet = DNSPacket::from_bytes(&mut reader)?;
+            println!("{packet:#?}");
         }
         Err(err) => eprintln!("Encountered error while trying to receive response: {err}"),
     };
