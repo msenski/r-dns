@@ -4,7 +4,7 @@ use crate::dns::{
 };
 use std::io::Write;
 
-pub const RECURSION_DESIRED: u16 = 1 << 8;
+pub const RECURSION_DESIRED: u16 = 1 << 8; // 256
 
 #[derive(Debug)]
 pub struct DNSHeader {
@@ -68,7 +68,7 @@ impl DNSHeader {
 
     pub fn new_query(id: u16) -> Self {
         let mut header = Self::new(id);
-        header.flags = RECURSION_DESIRED;
+        header.flags = 0;
         header.num_questions = 1;
         header
     }

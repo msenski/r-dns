@@ -1,14 +1,13 @@
 use crate::dns::{
-    BytePacketReader, DNSDecodable, DNSEncodable, DNSName, DNSResult, Data, ResourceClass,
-    ResourceType,
+    BytePacketReader, DNSDecodable, DNSEncodable, DNSName, DNSResult, Data, RecordClass, RecordType,
 };
 use std::{io::Write, net::Ipv4Addr};
 
 #[derive(Debug)]
 pub struct DNSRecord {
     pub name: DNSName,
-    pub type_: ResourceType,
-    pub class: ResourceClass,
+    pub type_: RecordType,
+    pub class: RecordClass,
     pub ttl: u32,
     // omit adding a `data_length`` property, as it can be derived
     // from `self.data` and should not be se manually
@@ -46,8 +45,8 @@ impl DNSEncodable for DNSRecord {
 impl DNSDecodable for DNSRecord {
     fn from_bytes(reader: &mut BytePacketReader) -> DNSResult<Self> {
         let name = DNSName::from_bytes(reader)?;
-        let type_ = ResourceType::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
-        let class = ResourceClass::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
+        let type_ = RecordType::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
+        let class = RecordClass::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
         let ttl = u32::from_be_bytes([
             reader.read()?,
             reader.read()?,
@@ -60,7 +59,7 @@ impl DNSDecodable for DNSRecord {
             data_bytes[i as usize] = reader.read()?;
         }
         let data = match type_ {
-            ResourceType::A => {
+            RecordType::A => {
                 let octets: [u8; 4] = data_bytes
                     .try_into()
                     .map_err(|_| "Ipv4 address must be exactly 4 bytes".to_string())?;

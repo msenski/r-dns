@@ -52,7 +52,7 @@ pub trait DNSDecodable {
 /// section 3.2.4 for details.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 #[repr(u16)]
-pub enum ResourceClass {
+pub enum RecordClass {
     IN = 1, // Internet
     CS = 2, // CSNET
     CH = 3, // CHAOS
@@ -60,26 +60,26 @@ pub enum ResourceClass {
     UNKNOWN(u16),
 }
 
-impl From<u16> for ResourceClass {
+impl From<u16> for RecordClass {
     fn from(value: u16) -> Self {
         match value {
-            1 => ResourceClass::IN,
-            2 => ResourceClass::CS,
-            3 => ResourceClass::CH,
-            4 => ResourceClass::HS,
-            _ => ResourceClass::UNKNOWN(value),
+            1 => RecordClass::IN,
+            2 => RecordClass::CS,
+            3 => RecordClass::CH,
+            4 => RecordClass::HS,
+            _ => RecordClass::UNKNOWN(value),
         }
     }
 }
 
-impl From<ResourceClass> for u16 {
-    fn from(variant: ResourceClass) -> Self {
+impl From<RecordClass> for u16 {
+    fn from(variant: RecordClass) -> Self {
         match variant {
-            ResourceClass::IN => 1,
-            ResourceClass::CS => 2,
-            ResourceClass::CH => 3,
-            ResourceClass::HS => 4,
-            ResourceClass::UNKNOWN(val) => val,
+            RecordClass::IN => 1,
+            RecordClass::CS => 2,
+            RecordClass::CH => 3,
+            RecordClass::HS => 4,
+            RecordClass::UNKNOWN(val) => val,
         }
     }
 }
@@ -88,7 +88,7 @@ impl From<ResourceClass> for u16 {
 /// section 3.2.4 for details.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 #[repr(u16)]
-pub enum ResourceType {
+pub enum RecordType {
     A = 1,        // IPv4 Address
     NS = 2,       // Name Server
     CNAME = 5,    // Canonical Name (Alias)
@@ -104,42 +104,42 @@ pub enum ResourceType {
     UNKNOWN(u16), // Catch-all for anything unexpected
 }
 
-impl From<u16> for ResourceType {
+impl From<u16> for RecordType {
     fn from(value: u16) -> Self {
         match value {
-            1 => ResourceType::A,
-            2 => ResourceType::NS,
-            5 => ResourceType::CNAME,
-            6 => ResourceType::SOA,
-            11 => ResourceType::WKS,
-            12 => ResourceType::PTR,
-            13 => ResourceType::HINFO,
-            14 => ResourceType::MINFO,
-            15 => ResourceType::MX,
-            16 => ResourceType::TXT,
-            28 => ResourceType::AAAA,
-            33 => ResourceType::SRV,
-            _ => ResourceType::UNKNOWN(value),
+            1 => RecordType::A,
+            2 => RecordType::NS,
+            5 => RecordType::CNAME,
+            6 => RecordType::SOA,
+            11 => RecordType::WKS,
+            12 => RecordType::PTR,
+            13 => RecordType::HINFO,
+            14 => RecordType::MINFO,
+            15 => RecordType::MX,
+            16 => RecordType::TXT,
+            28 => RecordType::AAAA,
+            33 => RecordType::SRV,
+            _ => RecordType::UNKNOWN(value),
         }
     }
 }
 
-impl From<ResourceType> for u16 {
-    fn from(variant: ResourceType) -> Self {
+impl From<RecordType> for u16 {
+    fn from(variant: RecordType) -> Self {
         match variant {
-            ResourceType::A => 1,
-            ResourceType::NS => 2,
-            ResourceType::CNAME => 5,
-            ResourceType::SOA => 6,
-            ResourceType::WKS => 11,
-            ResourceType::PTR => 12,
-            ResourceType::HINFO => 13,
-            ResourceType::MINFO => 14,
-            ResourceType::MX => 15,
-            ResourceType::TXT => 16,
-            ResourceType::AAAA => 28,
-            ResourceType::SRV => 33,
-            ResourceType::UNKNOWN(value) => value,
+            RecordType::A => 1,
+            RecordType::NS => 2,
+            RecordType::CNAME => 5,
+            RecordType::SOA => 6,
+            RecordType::WKS => 11,
+            RecordType::PTR => 12,
+            RecordType::HINFO => 13,
+            RecordType::MINFO => 14,
+            RecordType::MX => 15,
+            RecordType::TXT => 16,
+            RecordType::AAAA => 28,
+            RecordType::SRV => 33,
+            RecordType::UNKNOWN(value) => value,
         }
     }
 }

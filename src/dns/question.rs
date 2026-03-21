@@ -1,13 +1,13 @@
 use crate::dns::{
-    BytePacketReader, DNSDecodable, DNSEncodable, DNSName, DNSResult, ResourceClass, ResourceType,
+    BytePacketReader, DNSDecodable, DNSEncodable, DNSName, DNSResult, RecordClass, RecordType,
 };
 use std::io::Write;
 
 #[derive(Debug)]
 pub struct DNSQuestion {
     pub name: DNSName,
-    pub type_: ResourceType, // TODO: Add RecordType Enum
-    pub class: ResourceClass,
+    pub type_: RecordType, // TODO: Add RecordType Enum
+    pub class: RecordClass,
 }
 
 impl DNSEncodable for DNSQuestion {
@@ -28,8 +28,8 @@ impl DNSEncodable for DNSQuestion {
 impl DNSDecodable for DNSQuestion {
     fn from_bytes(reader: &mut BytePacketReader) -> DNSResult<Self> {
         let name = DNSName::from_bytes(reader)?;
-        let type_ = ResourceType::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
-        let class = ResourceClass::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
+        let type_ = RecordType::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
+        let class = RecordClass::from(u16::from_be_bytes([reader.read()?, reader.read()?]));
         Ok(DNSQuestion { name, type_, class })
     }
 }

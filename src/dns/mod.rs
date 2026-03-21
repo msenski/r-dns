@@ -3,6 +3,7 @@ pub mod name;
 pub mod packet;
 pub mod question;
 pub mod record;
+pub mod resolver;
 pub mod types;
 
 // Import all, for more convenient use.
@@ -11,4 +12,5 @@ pub use self::name::*;
 pub use self::packet::*;
 pub use self::question::*;
 pub use self::record::*;
+pub use self::resolver::*;
 pub use self::types::*;
